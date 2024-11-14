@@ -1,0 +1,26 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: CloudFormation template equivalent to the provided Terraform configuration for creating a VPC.
+
+Parameters:
+  Cidr:
+    Type: String
+    Description: The IPv4 CIDR block for the VPC. CIDR can be explicitly set or it can be derived from IPAM.
+    Default: "10.0.0.0/24"
+  VpcName:
+    Type: String
+    Description: VPC name
+    Default: "wordpress"
+
+Resources:
+  VPC:
+    Type: AWS::EC2::VPC
+    Properties:
+      CidrBlock: !Ref Cidr
+      Tags:
+        - Key: Name
+          Value: !Ref VpcName
+
+Outputs:
+  VpcId:
+    Description: The ID of the created VPC
+    Value: !Ref VPC
