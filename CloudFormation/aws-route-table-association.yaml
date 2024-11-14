@@ -1,0 +1,17 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: CloudFormation template equivalent to the provided Terraform configuration for associating a subnet with a route table.
+
+Parameters:
+  SubnetId:
+    Type: String
+    Description: The ID of the subnet to associate with the route table
+  RouteTableId:
+    Type: String
+    Description: The ID of the route table to associate with the subnet
+
+Resources:
+  WordPressRouteTableAssociation:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      SubnetId: !Ref SubnetId
+      RouteTableId: !Ref RouteTableId
