@@ -1,0 +1,27 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: CloudFormation template equivalent to the provided Terraform configuration for creating a Security Group.
+
+Parameters:
+  Region:
+    Type: String
+    Description: Region where to create resources
+    Default: "ap-northeast-1"
+  VpcId:
+    Type: String
+    Description: ID of the VPC where to create the security group
+  NamePrefix:
+    Type: String
+    Description: Name prefix of the security group
+
+Resources:
+  SecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupName: !Ref NamePrefix
+      VpcId: !Ref VpcId
+      GroupDescription: "Security group created via CloudFormation"
+
+Outputs:
+  SecurityGroupId:
+    Description: The ID of the security group
+    Value: !Ref SecurityGroup
