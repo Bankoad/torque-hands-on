@@ -1,0 +1,26 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: CloudFormation template to create an EC2 Key Pair
+
+Parameters:
+  KeyName:
+    Type: String
+    Description: Key name
+  KeyType:
+    Type: String
+    Description: Key type (e.g., rsa, ed25519)
+  KeyFormat:
+    Type: String
+    Description: Key format (e.g., pem, ppk)
+
+Resources:
+  EC2KeyPair:
+    Type: AWS::EC2::KeyPair
+    Properties:
+      KeyName: !Ref KeyName
+      KeyFormat: !Ref KeyFormat
+      KeyType: !Ref KeyType
+
+Outputs:
+  SecurityGroupRuleId:
+    Description: Key pair ID
+    Value: !Ref EC2KeyPair
