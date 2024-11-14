@@ -21,6 +21,6 @@ Resources:
       KeyType: !Ref KeyType
 
 Outputs:
-  SecurityGroupRuleId:
+  KeyPairId:
     Description: Key pair ID
     Value: !Ref EC2KeyPair
