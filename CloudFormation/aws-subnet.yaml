@@ -1,0 +1,36 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: CloudFormation template equivalent to the provided Terraform configuration for creating a Subnet.
+
+Parameters:
+  Region:
+    Type: String
+    Description: Region where to create resources
+    Default: "ap-northeast-1"
+  VpcId:
+    Type: String
+    Description: VPC ID
+  CidrBlock:
+    Type: String
+    Description: IPv4 CIDR Block
+  AvailabilityZone:
+    Type: String
+    Description: An availability zone in the region
+  ResourceName:
+    Type: String
+    Description: Resource name
+
+Resources:
+  Subnet:
+    Type: AWS::EC2::Subnet
+    Properties:
+      VpcId: !Ref VpcId
+      CidrBlock: !Ref CidrBlock
+      AvailabilityZone: !Ref AvailabilityZone
+      Tags:
+        - Key: Name
+          Value: !Ref ResourceName
+
+Outputs:
+  SubnetId:
+    Description: The ID of the created subnet
+    Value: !Ref Subnet
