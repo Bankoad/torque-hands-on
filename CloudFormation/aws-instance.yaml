@@ -1,0 +1,47 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: CloudFormation template equivalent to the provided Terraform configuration for creating an EC2 instance and outputting its public IP.
+
+Parameters:
+  InstanceName:
+    Type: String
+    Description: Name of the EC2 instance
+    Default: ""
+  AMI:
+    Type: String
+    Description: Amazon Machine Image ID for the EC2 instance
+    Default: "ami-0b6fe957a0eb4c1b9"
+  InstanceType:
+    Type: String
+    Description: Type of the EC2 instance
+    Default: "t3a.small"
+  SubnetId:
+    Type: String
+    Description: Subnet ID where the EC2 instance will be launched
+  KeyName:
+    Type: String
+    Description: Key pair name for the EC2 instance
+  VpcSecurityGroupId:
+    Type: String
+    Description: ID of the security group for the EC2 instance
+
+Resources:
+  EC2Instance:
+    Type: AWS::EC2::Instance
+    Properties:
+      ImageId: !Ref AMI
+      InstanceType: !Ref InstanceType
+      SubnetId: !Ref SubnetId
+      KeyName: !Ref KeyName
+      SecurityGroupIds:
+        - !Ref VpcSecurityGroupId
+      Tags:
+        - Key: Name
+          Value: !Ref InstanceName
+
+Outputs:
+  InstanceId:
+    Description: The ID of the created EC2 instance
+    Value: !Ref EC2Instance
+  InstancePublicIP:
+    Description: The public IP address of the created EC2 instance
+    Value: !GetAtt EC2Instance.PublicIp
