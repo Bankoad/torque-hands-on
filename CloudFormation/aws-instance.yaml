@@ -37,12 +37,14 @@ Resources:
     Properties:
       ImageId: !Ref AMI
       InstanceType: !Ref InstanceType
-      SubnetId: !Ref SubnetId
       KeyName: !Ref KeyName
-      SecurityGroupIds:
-        - !Ref VpcSecurityGroupId
-      NetworkInterface:
-        AssociatePublicIpAddress: !Ref AssociatePublicIpAddress
+      NetworkInterfaces: 
+        - AssociatePublicIpAddress: !Ref AssociatePublicIpAddress
+          DeleteOnTermination: "true"
+          DeviceIndex: "0"
+          SubnetId: !Ref SubnetId
+          GroupSet:
+            - !Ref VpcSecurityGroupId
       Tags:
         - Key: Name
           Value: !Ref InstanceName
