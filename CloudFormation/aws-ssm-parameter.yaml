@@ -7,6 +7,10 @@ Parameters:
     Description: Get ssh key text
     Default: "/ec2/keypair/key-000"
 
+Resources:
+  DummyResource:
+    Type: "AWS::CloudFormation::WaitConditionHandle"
+
 Outputs:
   SshKeyText:
     Description: SSH Key file
