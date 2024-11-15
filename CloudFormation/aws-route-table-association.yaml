@@ -10,7 +10,7 @@ Parameters:
     Description: The ID of the route table to associate with the subnet
 
 Resources:
-  WordPressRouteTableAssociation:
+  RouteTableAssociation:
     Type: AWS::EC2::SubnetRouteTableAssociation
     Properties:
       SubnetId: !Ref SubnetId
