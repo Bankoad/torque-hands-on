@@ -10,13 +10,13 @@
           - botocore
           - boto3
           
-    - name: Retrieve parameter from AWS SSM using ssm_parameter_store
-      community.aws.ssm_parameter_store:
+    - name: Get AWS SSM parameter
+      community.aws.ssm_parameter:
         name: "{{ ssm_parameter_name }}"
         decrypt: true
         region: "{{ aws_region }}"
-        aws_access_key: "{{ aws_access_key }}"
-        aws_secret_key: "{{ aws_secret_key }}"
+        access_key: "{{ aws_access_key }}"
+        secret_key: "{{ aws_secret_key }}"
       register: ssm_parameter
 
     - name: Save SSM parameter value to a local file
