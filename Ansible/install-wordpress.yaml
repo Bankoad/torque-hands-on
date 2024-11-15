@@ -2,6 +2,11 @@
   hosts: localhost
   connection: local
   gather_facts: no
+  vars:
+    my_parameter: "{{ ssm_parameter_name }}"
+    my_region: "{{ aws_region }}"
+    my_aws_access_key: "{{ aws_access_key }}"
+    my_aws_secret_key: "{{ aws_secret_key }}"
 
   tasks:
     - name: Install boto python package
@@ -9,19 +14,10 @@
         name:
           - botocore
           - boto3
-          
-    - name: Get AWS SSM parameter
-      community.aws.ssm_parameter:
-        name: "{{ ssm_parameter_name }}"
-        decryption: true
-        region: "{{ aws_region }}"
-        access_key: "{{ aws_access_key }}"
-        secret_key: "{{ aws_secret_key }}"
-      register: ssm_parameter
 
     - name: Save SSM parameter value to a local file
       copy:
-        content: "{{ ssm_parameter.value }}"
+        content: "{{ lookup('amazon.aws.aws_ssm', my_parameter, access_key=my_aws_access_key, secret_key=my_aws_secret_key, region=my_region) }}"
         dest: "{{ local_file_path }}"
 
 
