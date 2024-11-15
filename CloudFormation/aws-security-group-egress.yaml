@@ -2,10 +2,6 @@ AWSTemplateFormatVersion: '2010-09-09'
 Description: CloudFormation template equivalent to the provided Terraform configuration for creating an egress Security Group Rule.
 
 Parameters:
-  Region:
-    Type: String
-    Description: Region where to create resources
-    Default: "ap-northeast-1"
   SecurityGroupId:
     Type: String
     Description: ID of the security group
@@ -23,7 +19,7 @@ Parameters:
     Description: Protocol for the egress rule (e.g., tcp, udp, icmp)
 
 Resources:
-  ExampleSecurityGroupEgressRule:
+  SecurityGroupEgressRule:
     Type: AWS::EC2::SecurityGroupEgress
     Properties:
       GroupId: !Ref SecurityGroupId
@@ -35,4 +31,4 @@ Resources:
 Outputs:
   SecurityGroupRuleId:
     Description: The security group ID associated with the rule
-    Value: !Ref SecurityGroupId
+    Value: !Ref SecurityGroupEgressRule
