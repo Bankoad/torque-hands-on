@@ -11,9 +11,9 @@
           - boto3
           
     - name: Get AWS SSM parameter
-      amazon.aws.aws_ssm:
+      community.aws.ssm_parameter_store:
         name: "{{ ssm_parameter_name }}"
-        decrypt: true
+        decryption: true
         region: "{{ aws_region }}"
         access_key: "{{ aws_access_key }}"
         secret_key: "{{ aws_secret_key }}"
