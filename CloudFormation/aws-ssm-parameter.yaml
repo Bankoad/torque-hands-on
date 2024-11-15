@@ -3,7 +3,7 @@ Description: CloudFormation template equivalent to the provided Terraform config
 
 Parameters:
   KeyPairParameter:
-    Type: AWS::SSM::Parameter::Value<String>
+    Type: AWS::SSM::Parameter::Value<SecureString>
     Description: Get ssh key text
     Default: "/ec2/keypair/key-000"
 
