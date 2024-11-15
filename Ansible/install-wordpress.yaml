@@ -1,0 +1,120 @@
+- name: Retrieve SSM parameter and save to local file using ssm_parameter_store
+  hosts: localhost
+  connection: local
+  gather_facts: no
+
+  tasks:
+    - name: Install boto python package
+      ansible.builtin.pip:
+        name:
+          - botocore
+          - boto3
+          
+    - name: Retrieve parameter from AWS SSM using ssm_parameter_store
+      community.aws.ssm_parameter_store:
+        name: "{{ ssm_parameter_name }}"
+        decrypt: true
+        region: "{{ aws_region }}"
+        aws_access_key: "{{ aws_access_key }}"
+        aws_secret_key: "{{ aws_secret_key }}"
+      register: ssm_parameter
+
+    - name: Save SSM parameter value to a local file
+      copy:
+        content: "{{ ssm_parameter.value }}"
+        dest: "{{ local_file_path }}"
+
+
+- name: Setup WordPress with HTTPD and PHP
+  hosts: wordpress-server
+  gather_facts: no
+  become: yes
+  vars:
+    ansible_user: ec2-user
+    ansible_ssh_private_key_file: "{{ local_file_path }}"
+
+  tasks:
+    - name: Install boto python package
+      ansible.builtin.pip:
+        name:
+          - botocore
+          - boto3
+
+    - name: Install httpd and wget
+      yum:
+        name:
+          - httpd
+          - wget
+        state: present
+
+    - name: Install epel-release
+      yum:
+        name: epel-release
+        state: present
+
+    - name: Install Remi repository
+      yum:
+        name: http://rpms.famillecollet.com/enterprise/remi-release-7.rpm
+        state: present
+
+    - name: Install PHP and php-mysqlnd from Remi repository
+      yum:
+        name:
+          - php
+          - php-mysqlnd
+        enablerepo: epel,remi,remi-safe,remi-php74
+        disablerepo: '*'
+        state: present
+
+    - name: Allow HTTPD to connect to network
+      seboolean:
+        name: httpd_can_network_connect
+        state: true
+        persistent: yes
+
+    - name: Enable and start httpd service
+      systemd:
+        name: httpd
+        enabled: yes
+        state: started
+
+    - name: Download latest WordPress
+      get_url:
+        url: https://wordpress.org/latest.tar.gz
+        dest: /var/www/html/latest.tar.gz
+
+    - name: Extract WordPress
+      unarchive:
+        src: /var/www/html/latest.tar.gz
+        dest: /var/www/html/
+        remote_src: yes
+        extra_opts: --strip-components=1
+
+    - name: Copy wp-config-sample.php to wp-config.php
+      copy:
+        src: /var/www/html/wp-config-sample.php
+        dest: /var/www/html/wp-config.php
+
+    - name: Update wp-config.php with database name
+      replace:
+        path: /var/www/html/wp-config.php
+        regexp: 'database_name_here'
+        replace: "{{ db_name }}"
+
+    - name: Update wp-config.php with database username
+      replace:
+        path: /var/www/html/wp-config.php
+        regexp: 'username_here'
+        replace: "{{ db_username }}"
+
+    - name: Update wp-config.php with database password
+      replace:
+        path: /var/www/html/wp-config.php
+        regexp: 'password_here'
+        replace: "{{ db_password }}"
+
+    - name: Update wp-config.php with database endpoint
+      replace:
+        path: /var/www/html/wp-config.php
+        regexp: 'localhost'
+        replace: "{{ db_endpoint }}"
