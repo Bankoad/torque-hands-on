@@ -20,6 +20,11 @@
         content: "{{ lookup('amazon.aws.aws_ssm', my_parameter, access_key=my_aws_access_key, secret_key=my_aws_secret_key, region=my_region) }}"
         dest: "{{ local_file_path }}"
 
+    - name: Change file permissions
+      ansible.builtin.file:
+        path: "{{ local_file_path }}"
+        mode: '0600'
+
 
 - name: Setup WordPress with HTTPD and PHP
   hosts: wordpress-server
