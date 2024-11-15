@@ -23,6 +23,13 @@ Parameters:
   VpcSecurityGroupId:
     Type: String
     Description: ID of the security group for the EC2 instance
+  AssociatePublicIpAddress:
+    Description: "Set to true to associate a public IP address with the instance"
+    Type: String
+    AllowedValues:
+      - "true"
+      - "false"
+    Default: "true"
 
 Resources:
   EC2Instance:
@@ -34,6 +41,8 @@ Resources:
       KeyName: !Ref KeyName
       SecurityGroupIds:
         - !Ref VpcSecurityGroupId
+      NetworkInterface:
+        AssociatePublicIpAddress: !Ref AssociatePublicIpAddress
       Tags:
         - Key: Name
           Value: !Ref InstanceName
