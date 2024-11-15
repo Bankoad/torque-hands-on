@@ -24,3 +24,9 @@ Outputs:
   KeyPairId:
     Description: Key pair ID
     Value: !Ref EC2KeyPair
+  KeyFingerprint:
+    Description: Key pair ID
+    Value: !GetAtt EC2KeyPair.KeyFingerprint
+  KeyPairName:
+    Description: Key pair ID
+    Value: !GetAtt EC2KeyPair.KeyPairId
