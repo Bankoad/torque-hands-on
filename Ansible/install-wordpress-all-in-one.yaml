@@ -1,0 +1,78 @@
+- name: Retrieve SSM parameter and save to local file using ssm_parameter_store
+  hosts: localhost
+  connection: local
+  gather_facts: no
+
+  tasks:
+    - name: Save SSM parameter value to a local file
+      copy:
+        content: "{{ keypair_value }}"
+        dest: "{{ local_file_path }}"
+
+    - name: Change file permissions
+      ansible.builtin.file:
+        path: "{{ local_file_path }}"
+        mode: '0600'
+
+
+- name: Setup WordPress with HTTPD and PHP
+  hosts: wordpress-server
+  gather_facts: no
+  become: yes
+  vars:
+    ansible_user: ec2-user
+    ansible_ssh_private_key_file: "{{ local_file_path }}"
+
+  tasks:
+    - name: Install httpd and wget
+      yum:
+        name:
+          - httpd
+          - wget
+        state: present
+
+    - name: Install EPEL repository using amazon-linux-extras
+      command: "amazon-linux-extras enable php8.2"
+
+    - name: Clean YUM metadata
+      yum:
+        clean: metadata
+
+    - name: Install PHP packages
+      yum:
+        name:
+          - php-cli
+          - php-pdo
+          - php-fpm
+          - php-json
+          - php-mysqlnd
+        state: present
+
+    - name: Install PHP extra packages
+      yum:
+        name:
+          - php
+          - php-gd
+          - php-mbstring
+          - php-opcache
+          - php-xml
+          - php-common
+        state: present
+
+    - name: Download latest WordPress
+      get_url:
+        url: https://wordpress.org/latest.tar.gz
+        dest: /var/www/html/latest.tar.gz
+
+    - name: Extract WordPress
+      unarchive:
+        src: /var/www/html/latest.tar.gz
+        dest: /var/www/html/
+        remote_src: yes
+        extra_opts: --strip-components=1
+
+    - name: Enable and start httpd service
+      systemd:
+        name: httpd
+        enabled: yes
+        state: started
