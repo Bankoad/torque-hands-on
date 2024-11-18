@@ -29,6 +29,7 @@
         name:
           - httpd
           - wget
+          - ncurses-compat-libs
         state: present
 
     - name: Install EPEL repository using amazon-linux-extras
