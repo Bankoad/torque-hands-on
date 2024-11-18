@@ -60,7 +60,7 @@
 
     - name: Download latest WordPress
       get_url:
-        url: https://wordpress.org/latest.tar.gz
+        url: https://ja.wordpress.org/latest-ja.tar.gz
         dest: /var/www/html/latest.tar.gz
 
     - name: Extract WordPress
