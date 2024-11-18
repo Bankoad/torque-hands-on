@@ -44,7 +44,7 @@
         name:
           - php
           - php-mysqlnd
-        enablerepo: epel,remi,remi-safe,remi-php74
+        enablerepo: epel,remi,remi-safe,remi-php82
         disablerepo: '*'
         state: present
 
