@@ -1,4 +1,10 @@
 Parameters:
+  Subnet1Id: 
+    Type: String
+  Subnet2Id: 
+    Type: String
+  SecurityGroupId: 
+    Type: String
   DBName: 
     Type: String
   DBUsername: 
@@ -6,37 +12,12 @@ Parameters:
   DBPassword: 
     Type: String
     NoEcho: true
-  Subnet1Id: 
-    Type: String
-  Subnet2Id: 
-    Type: String
-  VPCId: 
-    Type: String
-  Name:
-    Type: String
 
 Outputs:
   Endpoint:
     Value: !GetAtt DBInstance.Endpoint.Address
 
 Resources:
-  DBSecurityGroup:
-    Type: "AWS::EC2::SecurityGroup"
-    Properties:
-      GroupName: "rds"
-      GroupDescription: "Security group for RDS"
-      VpcId: !Ref VPCId
-      SecurityGroupIngress:
-        - IpProtocol: "tcp"
-          FromPort: "3306"
-          ToPort: "3306"
-          CidrIp: "0.0.0.0/0"
-      SecurityGroupEgress:
-        - IpProtocol: "-1"
-          FromPort: "0"
-          ToPort: "0"
-          CidrIp: "0.0.0.0/0"
-
   DBSubnetGroup:
     Type: 'AWS::RDS::DBSubnetGroup'
     Properties:
@@ -49,7 +30,6 @@ Resources:
     Type: 'AWS::RDS::DBInstance'
     Properties:
       DBName: !Ref DBName
-      DBInstanceIdentifier: !Ref Name
       Engine: 'mariadb'
       EngineVersion: '10.6.10'
       DBInstanceClass: 'db.t2.micro'
@@ -59,7 +39,7 @@ Resources:
       MultiAZ: true
       DBSubnetGroupName: !Ref DBSubnetGroup
       VPCSecurityGroups:
-        - !Ref DBSecurityGroup
+        - !Ref SecurityGroupId
       MasterUsername: !Ref DBUsername
       MasterUserPassword: !Ref DBPassword
     DeletionPolicy: "Delete"
