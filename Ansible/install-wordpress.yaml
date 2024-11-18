@@ -32,49 +32,35 @@
         state: present
 
     - name: Install EPEL repository using amazon-linux-extras
-      command: "amazon-linux-extras install -y epel"
+      command: "amazon-linux-extras enable php8.2"
 
-    - name: Install Remi repository
-      yum:
-        name: http://rpms.famillecollet.com/enterprise/remi-release-7.rpm
-        state: present
+    - name: Clean YUM metadata
+      command: "yum clean metadata"
 
-    - name: Install libncurses
+    - name: Install PHP packages
       yum:
         name:
-          - ncurses-compat-libs
+          - php-cli
+          - php-pdo
+          - php-fpm
+          - php-json
+          - php-mysqlnd
         state: present
 
-    - name: Install libselinux
-      yum:
-        name:
-          - python3-libselinux
-        state: present
-
-    - name: Install PHP and php-mysqlnd from Remi repository
+    - name: Install PHP extra packages
       yum:
         name:
           - php
-          - php-mysqlnd
-        enablerepo: epel,remi,remi-safe,remi-php82
-        disablerepo: '*'
+          - php-gd
+          - php-mbstring
+          - php-opcache
+          - php-xml
+          - php-common
         state: present
-
-    - name: Allow HTTPD to connect to network
-      seboolean:
-        name: httpd_can_network_connect
-        state: true
-        persistent: yes
-
-    - name: Enable and start httpd service
-      systemd:
-        name: httpd
-        enabled: yes
-        state: started
 
     - name: Download latest WordPress
       get_url:
-        url: https://wordpress.org/latest.tar.gz
+        url: https://ja.wordpress.org/latest-ja.tar.gz
         dest: /var/www/html/latest.tar.gz
 
     - name: Extract WordPress
@@ -112,3 +98,9 @@
         path: /var/www/html/wp-config.php
         regexp: 'localhost'
         replace: "{{ db_endpoint }}"
+
+    - name: Enable and start httpd service
+      systemd:
+        name: httpd
+        enabled: yes
+        state: started
