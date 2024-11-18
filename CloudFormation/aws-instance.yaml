@@ -56,3 +56,6 @@ Outputs:
   InstancePublicIP:
     Description: The public IP address of the created EC2 instance
     Value: !GetAtt EC2Instance.PublicIp
+  InstancePrivateIp:
+    Description: The private IP address of the created EC2 instance
+    Value: !GetAtt EC2Instance.PrivateIp
