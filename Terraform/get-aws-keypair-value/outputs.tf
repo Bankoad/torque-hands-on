@@ -1,3 +1,3 @@
-output "ssm_parameter_value" {
+output "keypair_value" {
   value = data.aws_ssm_parameter.example.value
 }
