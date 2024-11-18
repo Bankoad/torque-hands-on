@@ -2,22 +2,11 @@
   hosts: localhost
   connection: local
   gather_facts: no
-  vars:
-    my_parameter: "{{ ssm_parameter_name }}"
-    my_region: "{{ aws_region }}"
-    my_aws_access_key: "{{ aws_access_key }}"
-    my_aws_secret_key: "{{ aws_secret_key }}"
 
   tasks:
-    - name: Install boto python package
-      ansible.builtin.pip:
-        name:
-          - botocore
-          - boto3
-
     - name: Save SSM parameter value to a local file
       copy:
-        content: "{{ lookup('amazon.aws.aws_ssm', my_parameter, access_key=my_aws_access_key, secret_key=my_aws_secret_key, region=my_region) }}"
+        content: "{{ keypair_value }}"
         dest: "{{ local_file_path }}"
 
     - name: Change file permissions
@@ -35,12 +24,6 @@
     ansible_ssh_private_key_file: "{{ local_file_path }}"
 
   tasks:
-    - name: Install boto python package
-      ansible.builtin.pip:
-        name:
-          - botocore
-          - boto3
-
     - name: Install httpd and wget
       yum:
         name:
