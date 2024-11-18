@@ -35,8 +35,7 @@
       command: "amazon-linux-extras enable php8.2"
 
     - name: Clean YUM metadata
-      yum:
-        clean: metadata
+      command: "yum clean metadata"
 
     - name: Install PHP packages
       yum:
