@@ -45,6 +45,12 @@
           - ncurses-compat-libs
         state: present
 
+    - name: Install libselinux
+      yum:
+        name:
+          - python3-libselinux
+        state: present
+
     - name: Install PHP and php-mysqlnd from Remi repository
       yum:
         name:
