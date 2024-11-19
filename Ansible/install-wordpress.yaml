@@ -74,6 +74,7 @@
       copy:
         src: /var/www/html/wp-config-sample.php
         dest: /var/www/html/wp-config.php
+        remote_src: yes
 
     - name: Update wp-config.php with database name
       replace:
