@@ -10,6 +10,11 @@
     - [ゴールイメージ](#ゴールイメージ)
     - [ヒント１](#ヒント１)
     - [ヒント２](#ヒント２)
+  - [Tips](#tips)
+    - [各種グレイン記載例](#各種グレイン記載例)
+      - [CloudFormation](#cloudformation)
+      - [Terrform](#terrform)
+      - [Ansible](#ansible)
 
 
 
@@ -144,3 +149,425 @@ Blueprintに同じIaCモジュールを2つ以上追加することも可能で�
 
 </details>
 
+## Tips
+
+
+<details>
+<summary>Torqueオンラインマニュアルはこちら</summary>
+
+https://docs.qtorque.io/
+
+</details>
+
+<details>
+<summary>Torqueエージェントのステータス確認方法【Kubernetes】</summary>
+
+Torqueエージェントをインストールしたサーバー上で下記コマンドを実行
+```
+kubectl get pods -A
+```
+
+実行後、下記のような状態のポッドが存在すれば正常に実行中
+```
+出力例）
+NAMESPACE                                      NAME                                                                       READY   STATUS    RESTARTS        AGE
+torque-agent-torque-hands-on-agent-dcuahk0rw   torque-agent-rs-e4f8a0-6968c9b7ff-fxx79                                    1/1     Running   1 (2d18h ago)   2d20h
+torque-agent-torque-hands-on-agent-dcuahk0rw   torque-agent-rs-e4f8a0-6968c9b7ff-vjgjn                                    1/1     Running   1 (2d18h ago)   2d20h
+```
+
+</details>
+
+<details>
+<summary>Blueprint Visual Builder (Beta)の仕様</summary>
+
+GUIのBlueprint作成画面にてCloudFormationやTerraformといったIaCを取り扱う場合、
+GUI上ではコントロールできない下記のような項目が存在します。
+```yaml
+      authentication:                 # リソースを作成するユーザの認証情報
+        - 'torque-hands-on'           # Torqueにて登録されてる認証情報を利用
+      region: '{{ .inputs.region }}'  # IaCによって作成されるリソースの場所　例）ap-northeast-1
+```
+
+これらの項目は別途コード編集画面にて直接編集する必要があります。
+下記は記載例です。
+```diff lang="yaml"
+  aws-vpc-yaml:
+    kind: 'cloudformation'
+    spec:
+      source:
+        store: 'torque-hands-on'
+        path: 'CloudFormation/aws-vpc.yaml'
+      agent:
+        name: '{{ .inputs.agent }}'
++     authentication:
++       - 'torque-hands-on'
++     region: '{{ .inputs.region }}'
+      env-vars: []
+      inputs:
+        - Cidr: '10.0.0.0/16'
+        - VpcName: 'test-vpc'
+      outputs:
+        - 'VpcId'
+```
+
+
+
+</details>
+
+<details>
+<summary>AnsibleグレインでのInventory記述例</summary>
+
+```
+      inventory-file:
+        localhost:
+          hosts:
+            127.0.0.1:
+              ansible_connection: 'local'
+        all:
+          hosts:
+            wordpress-server:
+              ansible_host: '{{ .grains.aws_wordpress_instance.outputs.InstancePublicIP }}'
+```
+
+</details>
+
+### 各種グレイン記載例
+#### CloudFormation
+
+<details><summary>aws-vpc.yaml</summary>
+
+```
+  aws-vpc-yaml:
+    kind: 'cloudformation'
+    spec:
+      source:
+        store: 'torque-hands-on'
+        path: 'CloudFormation/aws-vpc.yaml'
+      agent:
+        name: '{{ .inputs.agent }}'
+      authentication:
+        - 'torque-hands-on'
+      env-vars: []
+      region: '{{ .inputs.region }}'
+      inputs:
+        - Cidr: '10.0.0.0/16'
+        - VpcName: 'test-vpc'
+      outputs:
+        - 'VpcId'
+```
+
+</details>
+
+<details><summary>aws-subnet.yaml</summary>
+
+```
+  aws_subnet_wordpress:
+    kind: 'cloudformation'
+    spec:
+      source:
+        store: 'torque-hands-on'
+        path: 'CloudFormation/aws-subnet.yaml'
+      agent:
+        name: '{{ .inputs.agent }}'
+      authentication:
+        - 'torque-hands-on'
+      region: '{{ .inputs.region }}'
+      inputs:
+        - VpcId: '{{ .grains.aws-vpc-yaml.outputs.VpcId }}'
+        - CidrBlock: '10.0.0.0/24'
+        - AvailabilityZone: 'ap-northeast-1a'
+        - ResourceName: 'wordpress-subnet'
+      outputs:
+        - 'SubnetId'
+    depends-on: 'aws-vpc-yaml'
+```
+
+</details>
+
+<details><summary>aws-internet-gateway.yaml</summary>
+
+```
+  aws_internet_gateway:
+    kind: 'cloudformation'
+    spec:
+      source:
+        store: 'torque-hands-on'
+        path: 'CloudFormation/aws-internet-gateway.yaml'
+      agent:
+        name: '{{ .inputs.agent }}'
+      authentication:
+        - 'torque-hands-on'
+      region: '{{ .inputs.region }}'
+      inputs:
+        - VpcId: '{{ .grains.aws-vpc-yaml.outputs.VpcId }}'
+      outputs:
+        - 'IgwId'
+    depends-on: 'aws-vpc-yaml'
+```
+
+</details>
+
+<details><summary>aws-route-table.yaml</summary>
+
+```
+  aws_route_table:
+    kind: 'cloudformation'
+    spec:
+      source:
+        store: 'torque-hands-on'
+        path: 'CloudFormation/aws-route-table.yaml'
+      agent:
+        name: '{{ .inputs.agent }}'
+      authentication:
+        - 'torque-hands-on'
+      region: '{{ .inputs.region }}'
+      inputs:
+        - VpcId: '{{ .grains.aws-vpc-yaml.outputs.VpcId }}'
+        - ResourceName: 'test-rt'
+      outputs:
+        - 'RouteTableId'
+    depends-on: 'aws_internet_gateway,aws-vpc-yaml'
+```
+
+</details>
+
+<details><summary>aws-route.yaml</summary>
+
+```
+  aws_route:
+    kind: 'cloudformation'
+    spec:
+      source:
+        store: 'torque-hands-on'
+        path: 'CloudFormation/aws-route.yaml'
+      agent:
+        name: '{{ .inputs.agent }}'
+      authentication:
+        - 'torque-hands-on'
+      region: '{{ .inputs.region }}'
+      inputs:
+        - RouteTableId: '{{ .grains.aws_route_table.outputs.RouteTableId }}'
+        - DestinationCidrBlock: '0.0.0.0/0'
+        - GatewayId: '{{ .grains.aws_internet_gateway.outputs.IgwId }}'
+      outputs:
+        - 'RouteId'
+    depends-on: 'aws_route_table,aws_internet_gateway'
+```
+
+</details>
+
+<details><summary>aws-security-group.yaml</summary>
+
+```
+  aws_wordpress_sg:
+    kind: 'cloudformation'
+    spec:
+      source:
+        store: 'torque-hands-on'
+        path: 'CloudFormation/aws-security-group.yaml'
+      agent:
+        name: '{{ .inputs.agent }}'
+      authentication:
+        - 'torque-hands-on'
+      region: '{{ .inputs.region }}'
+      inputs:
+        - VpcId: '{{ .grains.aws-vpc-yaml.outputs.VpcId }}'
+        - NamePrefix: 'wordpress'
+      outputs:
+        - 'SecurityGroupId'
+    depends-on: 'aws-vpc-yaml'
+```
+
+</details>
+
+<details><summary>aws-security-group-egress.yaml</summary>
+
+```
+  aws_wordpress_sg_egress:
+    kind: 'cloudformation'
+    spec:
+      source:
+        store: 'torque-hands-on'
+        path: 'CloudFormation/aws-security-group-egress.yaml'
+      agent:
+        name: '{{ .inputs.agent }}'
+      authentication:
+        - 'torque-hands-on'
+      region: '{{ .inputs.region }}'
+      inputs:
+        - SecurityGroupId: '{{ .grains.aws_wordpress_sg.outputs.SecurityGroupId }}'
+        - CidrBlock: '0.0.0.0/0'
+        - FromPort: '0'
+        - ToPort: '0'
+        - Protocol: '-1'
+      outputs:
+        - 'SecurityGroupRuleId'
+    depends-on: 'aws_wordpress_sg'
+```
+
+</details>
+
+<details><summary>aws-security-group-ingress.yaml</summary>
+
+```
+  aws_wordpress_sg_ingress1:
+    kind: 'cloudformation'
+    spec:
+      source:
+        store: 'torque-hands-on'
+        path: 'CloudFormation/aws-security-group-ingress.yaml'
+      agent:
+        name: '{{ .inputs.agent }}'
+      authentication:
+        - 'torque-hands-on'
+      region: '{{ .inputs.region }}'
+      inputs:
+        - SecurityGroupId: '{{ .grains.aws_wordpress_sg.outputs.SecurityGroupId }}'
+        - CidrBlock: '0.0.0.0/0'
+        - FromPort: '22'
+        - ToPort: '22'
+        - Protocol: 'tcp'
+      outputs:
+        - 'SecurityGroupRuleId'
+    depends-on: 'aws_wordpress_sg'
+```
+
+</details>
+
+<details><summary>aws-route-table-association.yaml</summary>
+
+```
+  aws_route_table_association:
+    kind: 'cloudformation'
+    spec:
+      source:
+        store: 'torque-hands-on'
+        path: 'CloudFormation/aws-route-table-association.yaml'
+      agent:
+        name: '{{ .inputs.agent }}'
+      authentication:
+        - 'torque-hands-on'
+      region: '{{ .inputs.region }}'
+      inputs:
+        - SubnetId: '{{ .grains.aws_subnet_wordpress.outputs.SubnetId }}'
+        - RouteTableId: '{{ .grains.aws_route_table.outputs.RouteTableId }}'
+    depends-on: 'aws_route_table,aws_subnet_wordpress'
+```
+
+</details>
+
+<details><summary>aws-keypair.yaml</summary>
+
+```
+  aws_keypair:
+    kind: 'cloudformation'
+    spec:
+      source:
+        store: 'torque-hands-on'
+        path: 'CloudFormation/aws-keypair.yaml'
+      agent:
+        name: '{{ .inputs.agent }}'
+      authentication:
+        - 'torque-hands-on'
+      region: '{{ .inputs.region }}'
+      inputs:
+        - KeyName: 'test-kp'
+        - KeyType: 'rsa'
+        - KeyFormat: 'pem'
+      outputs:
+        - 'KeyPairName'
+        - 'KeyPairId'
+```
+
+</details>
+
+<details><summary>aws-rds.yaml</summary>
+
+```
+  aws_rds:
+    kind: 'cloudformation'
+    spec:
+      source:
+        store: 'torque-hands-on'
+        path: 'CloudFormation/aws-rds.yaml'
+      agent:
+        name: '{{ .inputs.agent }}'
+      authentication:
+        - 'torque-hands-on'
+      region: '{{ .inputs.region }}'
+      inputs:
+        - Subnet1Id: '{{ .grains.aws_subnet_database1.outputs.SubnetId }}'
+        - Subnet2Id: '{{ .grains.aws_subnet_database2.outputs.SubnetId }}'
+        - SecurityGroupId: '{{ .grains.aws_database_sg.outputs.SecurityGroupId }}'
+        - DBName: '{{ .inputs.database_name }}'
+        - DBUsername: '{{ .inputs.database_username }}'
+        - DBPassword: '{{ .inputs.database_password }}'
+      outputs:
+        - 'Endpoint'
+    depends-on: 'aws_subnet_database1,aws_subnet_database2,aws_database_sg'
+```
+
+</details>
+
+
+#### Terrform
+
+<details><summary>get-aws-keypair-value</summary>
+
+```
+  get_aws_keypair_value:
+    kind: 'terraform'
+    spec:
+      source:
+        store: 'torque-hands-on'
+        path: 'Terraform/get-aws-keypair-value'
+      agent:
+        name: '{{ .inputs.agent }}'
+      authentication:
+        - 'torque-hands-on'
+      region: '{{ .inputs.region }}'
+      inputs:
+        - keypair_id: '{{ .grains.aws_keypair.outputs.KeyPairId }}'
+      outputs:
+        - 'keypair_value'
+    depends-on: 'aws_keypair'
+```
+
+</details>
+
+
+#### Ansible
+
+<details><summary>install-wordpress.yaml</summary>
+
+```
+  install_wordpress:
+    kind: 'ansible'
+    spec:
+      source:
+        store: 'torque-hands-on'
+        path: 'Ansible/install-wordpress.yaml'
+      agent:
+        name: '{{ .inputs.agent }}'
+      inventory-file:
+        localhost:
+          hosts:
+            127.0.0.1:
+              ansible_connection: 'local'
+        all:
+          hosts:
+            wordpress-server:
+              ansible_host: '{{ .grains.aws_wordpress_instance.outputs.InstancePublicIP }}'
+      inputs:
+        - keypair_value: '{{ .grains.get_aws_keypair_value.outputs.keypair_value }}'
+        - local_file_path: '/tmp/ssh-key.pem'
+        - db_name: '{{ .inputs.database_name }}'
+        - db_username: '{{ .inputs.database_username }}'
+        - db_password: '{{ .inputs.database_password }}'
+        - db_endpoint: '{{ .grains.aws_rds.outputs.Endpoint }}'
+      outputs:
+        - 'result'
+    depends-on: 'aws_rds,aws_wordpress_instance,get_aws_keypair_value'
+```
+
+</details>
