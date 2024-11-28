@@ -133,6 +133,7 @@ https://www.quali.com/torque/
 ## 宿題（Web3層デモ）
 ### ゴールイメージ
 ![ゴールイメージ1](./readme-src/goal1.png)
+![ゴールイメージ2](./readme-src/goal2.png)
 ### ヒント１
 <details>
 <summary>開く</summary>
