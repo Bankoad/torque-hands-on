@@ -190,7 +190,7 @@ GUI上ではコントロールできない下記のような項目が存在し�
 
 これらの項目は別途コード編集画面にて直接編集する必要があります。
 下記は記載例です。
-```diff lang="yaml"
+```diff_yaml
   aws-vpc-yaml:
     kind: 'cloudformation'
     spec:
@@ -217,16 +217,34 @@ GUI上ではコントロールできない下記のような項目が存在し�
 <details>
 <summary>AnsibleグレインでのInventory記述例</summary>
 
-```
-      inventory-file:
-        localhost:
-          hosts:
-            127.0.0.1:
-              ansible_connection: 'local'
-        all:
-          hosts:
-            wordpress-server:
-              ansible_host: '{{ .grains.aws_wordpress_instance.outputs.InstancePublicIP }}'
+```diff_yaml
+  install_wordpress:
+    kind: 'ansible'
+    spec:
+      source:
+        store: 'torque-hands-on'
+        path: 'Ansible/install-wordpress.yaml'
+      agent:
+        name: '{{ .inputs.agent }}'
++     inventory-file:
++       localhost:
++         hosts:
++           127.0.0.1:
++             ansible_connection: 'local'
++       all:
++         hosts:
++           wordpress-server:
++             ansible_host: '{{ .grains.aws_wordpress_instance.outputs.InstancePublicIP }}'
+      inputs:
+        - keypair_value: '{{ .grains.get_aws_keypair_value.outputs.keypair_value }}'
+        - local_file_path: '/tmp/ssh-key.pem'
+        - db_name: '{{ .inputs.database_name }}'
+        - db_username: '{{ .inputs.database_username }}'
+        - db_password: '{{ .inputs.database_password }}'
+        - db_endpoint: '{{ .grains.aws_rds.outputs.Endpoint }}'
+      outputs:
+        - 'result'
+    depends-on: 'aws_rds,aws_wordpress_instance,get_aws_keypair_value'
 ```
 
 </details>
@@ -236,7 +254,7 @@ GUI上ではコントロールできない下記のような項目が存在し�
 
 <details><summary>aws-vpc.yaml</summary>
 
-```
+```yaml
   aws-vpc-yaml:
     kind: 'cloudformation'
     spec:
@@ -260,7 +278,7 @@ GUI上ではコントロールできない下記のような項目が存在し�
 
 <details><summary>aws-subnet.yaml</summary>
 
-```
+```yaml
   aws_subnet_wordpress:
     kind: 'cloudformation'
     spec:
@@ -286,7 +304,7 @@ GUI上ではコントロールできない下記のような項目が存在し�
 
 <details><summary>aws-internet-gateway.yaml</summary>
 
-```
+```yaml
   aws_internet_gateway:
     kind: 'cloudformation'
     spec:
@@ -309,7 +327,7 @@ GUI上ではコントロールできない下記のような項目が存在し�
 
 <details><summary>aws-route-table.yaml</summary>
 
-```
+```yaml
   aws_route_table:
     kind: 'cloudformation'
     spec:
@@ -333,7 +351,7 @@ GUI上ではコントロールできない下記のような項目が存在し�
 
 <details><summary>aws-route.yaml</summary>
 
-```
+```yaml
   aws_route:
     kind: 'cloudformation'
     spec:
@@ -358,7 +376,7 @@ GUI上ではコントロールできない下記のような項目が存在し�
 
 <details><summary>aws-security-group.yaml</summary>
 
-```
+```yaml
   aws_wordpress_sg:
     kind: 'cloudformation'
     spec:
@@ -382,7 +400,7 @@ GUI上ではコントロールできない下記のような項目が存在し�
 
 <details><summary>aws-security-group-egress.yaml</summary>
 
-```
+```yaml
   aws_wordpress_sg_egress:
     kind: 'cloudformation'
     spec:
@@ -409,7 +427,7 @@ GUI上ではコントロールできない下記のような項目が存在し�
 
 <details><summary>aws-security-group-ingress.yaml</summary>
 
-```
+```yaml
   aws_wordpress_sg_ingress1:
     kind: 'cloudformation'
     spec:
@@ -436,7 +454,7 @@ GUI上ではコントロールできない下記のような項目が存在し�
 
 <details><summary>aws-route-table-association.yaml</summary>
 
-```
+```yaml
   aws_route_table_association:
     kind: 'cloudformation'
     spec:
@@ -458,7 +476,7 @@ GUI上ではコントロールできない下記のような項目が存在し�
 
 <details><summary>aws-keypair.yaml</summary>
 
-```
+```yaml
   aws_keypair:
     kind: 'cloudformation'
     spec:
@@ -483,7 +501,7 @@ GUI上ではコントロールできない下記のような項目が存在し�
 
 <details><summary>aws-rds.yaml</summary>
 
-```
+```yaml
   aws_rds:
     kind: 'cloudformation'
     spec:
@@ -514,7 +532,7 @@ GUI上ではコントロールできない下記のような項目が存在し�
 
 <details><summary>get-aws-keypair-value</summary>
 
-```
+```yaml
   get_aws_keypair_value:
     kind: 'terraform'
     spec:
@@ -540,7 +558,7 @@ GUI上ではコントロールできない下記のような項目が存在し�
 
 <details><summary>install-wordpress.yaml</summary>
 
-```
+```yaml
   install_wordpress:
     kind: 'ansible'
     spec:
