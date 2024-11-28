@@ -190,7 +190,7 @@ GUI上ではコントロールできない下記のような項目が存在し�
 
 これらの項目は別途コード編集画面にて直接編集する必要があります。
 下記は記載例です。
-```diff_yaml
+``` diff yaml
   aws-vpc-yaml:
     kind: 'cloudformation'
     spec:
@@ -217,7 +217,7 @@ GUI上ではコントロールできない下記のような項目が存在し�
 <details>
 <summary>AnsibleグレインでのInventory記述例</summary>
 
-```diff_yaml
+``` diff yaml
   install_wordpress:
     kind: 'ansible'
     spec:
