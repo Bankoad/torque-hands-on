@@ -178,7 +178,7 @@ torque-agent-torque-hands-on-agent-dcuahk0rw   torque-agent-rs-e4f8a0-6968c9b7ff
 </details>
 
 <details>
-<summary>Blueprint Visual Builder (Beta)の仕様</summary>
+<summary>Blueprint Visual Builder (Beta)の仕様その１</summary>
 
 GUIのBlueprint作成画面にてCloudFormationやTerraformといったIaCを取り扱う場合、
 GUI上ではコントロールできない下記のような項目が存在します。
@@ -210,7 +210,33 @@ GUI上ではコントロールできない下記のような項目が存在し�
         - 'VpcId'
 ```
 
+</details>
 
+<details>
+<summary>Blueprint Visual Builder (Beta)の仕様その２</summary>
+
+Blueprintに追加したIaCの"outputs"の名称は、IaCに定義されている名称と一致させる必要があります。<br>
+例えばCloudFormationで下記のようにアウトプットが定義されている場合、
+```yaml
+Outputs:
+  VpcId: # ここがアウトプットの名称
+    Description: The ID of the created VPC
+    Value: !Ref VPC
+```
+
+Bluepritでは下記のように記述する必要があります。
+```yaml
+      outputs:
+        - 'VpcId' # CloudFormationのアウトプットと同じ名称
+```
+
+しかし、GUIのBlueprint作成画面にてIaCを追加すると、outputsの項目が下記のように生成されます。
+
+```yaml
+      outputs:
+        - 'aws-vpc-yaml_VpcId' # 'ファイル名_アウトプット名'といったフォーマット
+```
+この場合アウトプット名以外が余分なため、コード編集画面にて直接修正する必要があります。
 
 </details>
 
