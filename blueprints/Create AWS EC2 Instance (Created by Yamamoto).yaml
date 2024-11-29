@@ -1,20 +1,24 @@
 spec_version: 2
-description: 'Torque IAC asset'
 inputs:
-  agent:
-    type: 'agent'
   region:
     type: 'string'
     default: 'ap-northeast-1'
+  agent:
+    type: 'agent'
+    style: 'text'
+    allowed-values:
+      - 'torque-hands-on-agent'
+  aws_credential:
+    type: 'credentials'
 outputs:
   InstancePublicIP:
     value: '{{ .grains.aws_instance.outputs.InstancePublicIP }}'
     quick: false
-  get-aws-keypair-value_keypair_value:
-    value: '{{ .grains.get_aws_keypair_value.outputs.get-aws-keypair-value_keypair_value }}'
+  keypair_value:
+    value: '{{ .grains.get_aws_keypair_value.outputs.keypair_value }}'
     quick: false
 grains:
-  aws-vpc-yaml:
+  aws_vpc:
     kind: 'cloudformation'
     spec:
       source:
@@ -23,12 +27,11 @@ grains:
       agent:
         name: '{{ .inputs.agent }}'
       authentication:
-        - 'torque-hands-on'
-      env-vars: []
+        - '{ .inputs.aws_credential }}'
       region: '{{ .inputs.region }}'
       inputs:
-        - Cidr: '10.0.0.0/16'
-        - VpcName: 'test-vpc'
+        - Cidr: '10.0.0.0/24'
+        - VpcName: 'wordpress'
       outputs:
         - 'VpcId'
   aws_subnet:
@@ -40,16 +43,16 @@ grains:
       agent:
         name: '{{ .inputs.agent }}'
       authentication:
-        - 'torque-hands-on'
+        - '{ .inputs.aws_credential }}'
       region: '{{ .inputs.region }}'
       inputs:
-        - VpcId: '{{ .grains.aws-vpc-yaml.outputs.VpcId }}'
+        - VpcId: '{{ .grains.aws_vpc.outputs.VpcId }}'
         - CidrBlock: '10.0.0.0/24'
         - AvailabilityZone: 'ap-northeast-1a'
-        - ResourceName: 'test-sb'
+        - ResourceName: 'test'
       outputs:
         - 'SubnetId'
-    depends-on: 'aws-vpc-yaml'
+    depends-on: 'aws_vpc'
   aws_internet_gateway:
     kind: 'cloudformation'
     spec:
@@ -59,13 +62,13 @@ grains:
       agent:
         name: '{{ .inputs.agent }}'
       authentication:
-        - 'torque-hands-on'
+        - '{ .inputs.aws_credential }}'
       region: '{{ .inputs.region }}'
       inputs:
-        - VpcId: '{{ .grains.aws-vpc-yaml.outputs.VpcId }}'
+        - VpcId: '{{ .grains.aws_vpc.outputs.VpcId }}'
       outputs:
         - 'IgwId'
-    depends-on: 'aws-vpc-yaml'
+    depends-on: 'aws_vpc'
   aws_route_table:
     kind: 'cloudformation'
     spec:
@@ -75,14 +78,14 @@ grains:
       agent:
         name: '{{ .inputs.agent }}'
       authentication:
-        - 'torque-hands-on'
+        - '{ .inputs.aws_credential }}'
       region: '{{ .inputs.region }}'
       inputs:
-        - VpcId: '{{ .grains.aws-vpc-yaml.outputs.VpcId }}'
+        - VpcId: '{{ .grains.aws_vpc.outputs.VpcId }}'
         - ResourceName: 'test-rt'
       outputs:
         - 'RouteTableId'
-    depends-on: 'aws_internet_gateway,aws-vpc-yaml'
+    depends-on: 'aws_subnet,aws_vpc'
   aws_route:
     kind: 'cloudformation'
     spec:
@@ -92,7 +95,7 @@ grains:
       agent:
         name: '{{ .inputs.agent }}'
       authentication:
-        - 'torque-hands-on'
+        - '{ .inputs.aws_credential }}'
       region: '{{ .inputs.region }}'
       inputs:
         - RouteTableId: '{{ .grains.aws_route_table.outputs.RouteTableId }}'
@@ -101,6 +104,21 @@ grains:
       outputs:
         - 'RouteId'
     depends-on: 'aws_route_table,aws_internet_gateway'
+  aws_route_table_association:
+    kind: 'cloudformation'
+    spec:
+      source:
+        store: 'torque-hands-on'
+        path: 'CloudFormation/aws-route-table-association.yaml'
+      agent:
+        name: '{{ .inputs.agent }}'
+      authentication:
+        - '{ .inputs.aws_credential }}'
+      region: '{{ .inputs.region }}'
+      inputs:
+        - SubnetId: '{{ .grains.aws_subnet.outputs.SubnetId }}'
+        - RouteTableId: '{{ .grains.aws_route_table.outputs.RouteTableId }}'
+    depends-on: 'aws_subnet,aws_route_table'
   aws_security_group:
     kind: 'cloudformation'
     spec:
@@ -110,14 +128,14 @@ grains:
       agent:
         name: '{{ .inputs.agent }}'
       authentication:
-        - 'torque-hands-on'
+        - '{ .inputs.aws_credential }}'
       region: '{{ .inputs.region }}'
       inputs:
-        - VpcId: '{{ .grains.aws-vpc-yaml.outputs.VpcId }}'
+        - VpcId: '{{ .grains.aws_vpc.outputs.VpcId }}'
         - NamePrefix: 'test'
       outputs:
         - 'SecurityGroupId'
-    depends-on: 'aws_route,aws-vpc-yaml'
+    depends-on: 'aws_route,aws_vpc'
   aws_security_group_egress:
     kind: 'cloudformation'
     spec:
@@ -127,7 +145,7 @@ grains:
       agent:
         name: '{{ .inputs.agent }}'
       authentication:
-        - 'torque-hands-on'
+        - '{ .inputs.aws_credential }}'
       region: '{{ .inputs.region }}'
       inputs:
         - SecurityGroupId: '{{ .grains.aws_security_group.outputs.SecurityGroupId }}'
@@ -147,32 +165,17 @@ grains:
       agent:
         name: '{{ .inputs.agent }}'
       authentication:
-        - 'torque-hands-on'
+        - '{ .inputs.aws_credential }}'
       region: '{{ .inputs.region }}'
       inputs:
         - SecurityGroupId: '{{ .grains.aws_security_group.outputs.SecurityGroupId }}'
-        - CidrBlock: '14.193.35.221/32'
+        - CidrBlock: '0.0.0.0/0'
         - FromPort: '22'
         - ToPort: '22'
         - Protocol: 'tcp'
       outputs:
         - 'SecurityGroupRuleId'
     depends-on: 'aws_security_group'
-  aws_route_table_association:
-    kind: 'cloudformation'
-    spec:
-      source:
-        store: 'torque-hands-on'
-        path: 'CloudFormation/aws-route-table-association.yaml'
-      agent:
-        name: '{{ .inputs.agent }}'
-      authentication:
-        - 'torque-hands-on'
-      region: '{{ .inputs.region }}'
-      inputs:
-        - SubnetId: '{{ .grains.aws_subnet.outputs.SubnetId }}'
-        - RouteTableId: '{{ .grains.aws_route_table.outputs.RouteTableId }}'
-    depends-on: 'aws_subnet,aws_route_table'
   aws_keypair:
     kind: 'cloudformation'
     spec:
@@ -182,15 +185,32 @@ grains:
       agent:
         name: '{{ .inputs.agent }}'
       authentication:
-        - 'torque-hands-on'
+        - '{ .inputs.aws_credential }}'
       region: '{{ .inputs.region }}'
       inputs:
-        - KeyName: 'test-kp'
+        - KeyName: 'test'
         - KeyType: 'rsa'
         - KeyFormat: 'pem'
       outputs:
         - 'KeyPairName'
+        - 'KeyFingerprint'
         - 'KeyPairId'
+  get_aws_keypair_value:
+    kind: 'terraform'
+    spec:
+      source:
+        store: 'torque-hands-on'
+        path: 'Terraform/get-aws-keypair-value'
+      agent:
+        name: '{{ .inputs.agent }}'
+      authentication:
+        - '{ .inputs.aws_credential }}'
+      region: '{{ .inputs.region }}'
+      inputs:
+        - keypair_id: '{{ .grains.aws_keypair.outputs.KeyPairId }}'
+      outputs:
+        - 'keypair_value'
+    depends-on: 'aws_keypair'
   aws_instance:
     kind: 'cloudformation'
     spec:
@@ -200,7 +220,7 @@ grains:
       agent:
         name: '{{ .inputs.agent }}'
       authentication:
-        - 'torque-hands-on'
+        - '{ .inputs.aws_credential }}'
       region: '{{ .inputs.region }}'
       inputs:
         - InstanceName: 'test-ins'
@@ -213,20 +233,5 @@ grains:
       outputs:
         - 'InstanceId'
         - 'InstancePublicIP'
-    depends-on: 'aws_subnet,aws_security_group,aws_keypair'
-  get_aws_keypair_value:
-    kind: 'terraform'
-    spec:
-      source:
-        store: 'torque-hands-on'
-        path: 'Terraform/get-aws-keypair-value'
-      agent:
-        name: '{{ .inputs.agent }}'
-      authentication:
-        - 'torque-hands-on'
-      region: '{{ .inputs.region }}'
-      inputs:
-        - keypair_id: '{{ .grains.aws_keypair.outputs.KeyPairId }}'
-      outputs:
-        - 'get-aws-keypair-value_keypair_value'
-    depends-on: 'aws_keypair'
+        - 'InstancePrivateIp'
+    depends-on: 'aws_security_group,aws_keypair,aws_subnet'
