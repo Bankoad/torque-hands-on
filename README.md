@@ -300,13 +300,13 @@ Torqueでは他のユーザーを招待することができ、共同で作業�
 ユーザーの管理や、ロールの種類、ロールごとの制限の詳細については下記を参照してください。
 https://docs.qtorque.io/governance/roles-and-permissions
 
-作成方法）
+作成方法）<br>
 ![RBAC1](./readme-src/RBAC1.png)
 ![RBAC2](./readme-src/RBAC2.png)
 ![RBAC3](./readme-src/RBAC3.png)
 1～5を選択
 
-![RBAC4](./readme-src/RBAC4.png)
+![RBAC4](./readme-src/RBAC4.png)<br>
 招待したいユーザのEmailと割り当てるロールを下記入力項目で設定
 - Select Account Role
 - Select Space Role
