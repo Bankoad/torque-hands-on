@@ -286,19 +286,19 @@ minikube start --driver=none
 
 <details><summary>ハンズオンで作成したBlueprint</summary>
 
-Torqueで作成したBlueprintは、GitHubリポジトリに保管することでバージョン管理が可能になります。
-Blueprintを保管したGitHubリポジトリをTorqueに登録すると、TorqueのBlueprint一覧画面にそのBlueprintが表示され、利用することが可能です。
+Torqueで作成したBlueprintは、GitHubリポジトリに保管することでバージョン管理が可能になります。<br>
+Blueprintを保管したGitHubリポジトリをTorqueに登録すると、TorqueのBlueprint一覧画面にそのBlueprintが表示され、利用することが可能です。<br>
 ハンズオン中に作成したBlueprintをこのリポジトリに追加しましたので、Torqueに表示されているかどうか参考までに確認してみてください。
 
 </details>
 
 <details><summary>Torqueのユーザー管理</summary>
 
-Torqueでは他のユーザーを招待することができ、共同で作業をすることが可能です。
-また、Torqueでのユーザー管理はRBACが採用されており、ロールによって、
-ユーザーがアクセスできるメニューや機能を制限することも可能です。
-ユーザーの管理や、ロールの種類、ロールごとの制限の詳細については下記を参照してください。
-https://docs.qtorque.io/governance/roles-and-permissions
+Torqueでは他のユーザーを招待することができ、共同で作業をすることが可能です。<br>
+また、Torqueでのユーザー管理はRBACが採用されており、ロールによって、<br>
+ユーザーがアクセスできるメニューや機能を制限することも可能です。<br>
+ユーザーの管理や、ロールの種類、ロールごとの制限の詳細については下記を参照してください。<br>
+https://docs.qtorque.io/governance/roles-and-permissions<br>
 
 作成方法）<br>
 ![RBAC1](./readme-src/RBAC1.png)
