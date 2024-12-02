@@ -11,6 +11,7 @@
     - [ヒント１](#ヒント１)
     - [ヒント２](#ヒント２)
   - [Tips](#tips)
+    - [Tips](#tips-1)
     - [各種グレイン記載例](#各種グレイン記載例)
       - [CloudFormation](#cloudformation)
       - [Terrform](#terrform)
@@ -52,8 +53,7 @@ https://github.com/adoc-github/torque-hands-on
 |<ul><li>[ ] </ul>|-      |-              |ストレージ|100GiB gp2|
 
 2. インスタンスにminikubeをインストール
-<details>
-<summary>minikubeインストール</summary>
+<details><summary>minikubeインストール</summary>
 
   ```
   #!/bin/bash
@@ -134,6 +134,8 @@ https://www.quali.com/torque/
 ### ゴールイメージ
 ![ゴールイメージ1](./readme-src/goal1.png)
 ![ゴールイメージ2](./readme-src/goal2.png)
+![ゴールイメージ3](./readme-src/goal3.png)
+![ゴールイメージ4](./readme-src/goal4.png)
 ### ヒント１
 <details>
 <summary>開く</summary>
@@ -151,17 +153,15 @@ Blueprintに同じIaCモジュールを2つ以上追加することも可能で�
 </details>
 
 ## Tips
+### Tips
 
-
-<details>
-<summary>Torqueオンラインマニュアルはこちら</summary>
+<details><summary>Torqueオンラインマニュアルはこちら</summary>
 
 https://docs.qtorque.io/
 
 </details>
 
-<details>
-<summary>Torqueエージェントのステータス確認方法【Kubernetes】</summary>
+<details><summary>Torqueエージェントのステータス確認方法【Kubernetes】</summary>
 
 Torqueエージェントをインストールしたサーバー上で下記コマンドを実行
 ```
@@ -178,8 +178,7 @@ torque-agent-torque-hands-on-agent-dcuahk0rw   torque-agent-rs-e4f8a0-6968c9b7ff
 
 </details>
 
-<details>
-<summary>Blueprint Visual Builder (Beta)の仕様その１</summary>
+<details><summary>Blueprint Visual Builder (Beta)の仕様その１</summary>
 
 GUIのBlueprint作成画面にてCloudFormationやTerraformといったIaCを取り扱う場合、
 GUI上ではコントロールできない下記のような項目が存在します。
@@ -213,8 +212,7 @@ GUI上ではコントロールできない下記のような項目が存在し�
 
 </details>
 
-<details>
-<summary>Blueprint Visual Builder (Beta)の仕様その２</summary>
+<details><summary>Blueprint Visual Builder (Beta)の仕様その２</summary>
 
 Blueprintに追加したIaCの"outputs"の名称は、IaCに定義されている名称と一致させる必要があります。<br>
 例えばCloudFormationで下記のようにアウトプットが定義されている場合、
@@ -241,8 +239,7 @@ Bluepritでは下記のように記述する必要があります。
 
 </details>
 
-<details>
-<summary>AnsibleグレインでのInventory記述例</summary>
+<details><summary>AnsibleグレインでのInventory記述例</summary>
 
 ``` diff yaml
   install_wordpress:
@@ -273,6 +270,48 @@ Bluepritでは下記のように記述する必要があります。
         - 'result'
     depends-on: 'aws_rds,aws_wordpress_instance,get_aws_keypair_value'
 ```
+
+</details>
+
+<details><summary>Torqueエージェントの再起動方法</summary>
+
+コスト削減等の理由でTorqueエージェント用インスタンスを停止中の方は、
+インスタンス再起動後、以下のコマンドをrootで実行するとTorqueエージェントが復旧します。
+```
+minikube start --driver=none
+```
+※インスタンスを削除している場合はminikubeとTorqeuエージェントの再インストールが必要です。
+
+</details>
+
+<details><summary>ハンズオンで作成したBlueprint</summary>
+
+Torqueで作成したBlueprintは、GitHubリポジトリに保管することでバージョン管理が可能になります。
+Blueprintを保管したGitHubリポジトリをTorqueに登録すると、TorqueのBlueprint一覧画面にそのBlueprintが表示され、利用することが可能です。
+ハンズオン中に作成したBlueprintをこのリポジトリに追加しましたので、Torqueに表示されているかどうか参考までに確認してみてください。
+
+</details>
+
+<details><summary>Torqueのユーザー管理</summary>
+
+Torqueでは他のユーザーを招待することができ、共同で作業をすることが可能です。
+また、Torqueでのユーザー管理はRBACが採用されており、ロールによって、
+ユーザーがアクセスできるメニューや機能を制限することも可能です。
+ユーザーの管理や、ロールの種類、ロールごとの制限の詳細については下記を参照してください。
+https://docs.qtorque.io/governance/roles-and-permissions
+
+作成方法）
+![RBAC1](./readme-src/RBAC1.png)
+![RBAC2](./readme-src/RBAC2.png)
+![RBAC3](./readme-src/RBAC3.png)
+1～5を選択
+
+![RBAC4](./readme-src/RBAC4.png)
+招待したいユーザのEmailと割り当てるロールを下記入力項目で設定
+- Select Account Role
+- Select Space Role
+- Select Space
+- Email
 
 </details>
 
